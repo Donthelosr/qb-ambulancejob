@@ -48,16 +48,48 @@ RegisterNetEvent('hospital:client:UseIfaks', function()
     }, {}, {}, function() -- Done
         StopAnimTask(ped, "mp_suicide", "pill", 1.0)
         TriggerServerEvent("hospital:server:removeIfaks")
+        TriggerServerEvent('qb-inventory:server:RemoveItem',"ifaks", 1)
         TriggerEvent("inventory:client:ItemBox", QBCore.Shared.Items["ifaks"], "remove")
         TriggerServerEvent('hud:server:RelieveStress', math.random(12, 24))
         SetEntityHealth(ped, GetEntityHealth(ped) + 10)
-        if painkillerAmount < 3 then
-            painkillerAmount = painkillerAmount + 1
-        end
+        -- if painkillerAmount < 3 then
+        --     painkillerAmount = painkillerAmount + 1
+        -- end
         PainKillerLoop()
         if math.random(1, 100) < 50 then
             RemoveBleed(1)
+            ResetPartial()
         end
+    end, function() -- Cancel
+        StopAnimTask(ped, "mp_suicide", "pill", 1.0)
+        QBCore.Functions.Notify(Lang:t('error.canceled'), "error")
+    end)
+end)
+
+RegisterNetEvent('hospital:client:UseOxy', function()
+    local ped = PlayerPedId()
+    QBCore.Functions.Progressbar("use_bandage", "Taking an Oxy", 3000, false, true, {
+        disableMovement = false,
+        disableCarMovement = false,
+		disableMouse = false,
+		disableCombat = true,
+    }, {
+		animDict = "mp_suicide",
+		anim = "pill",
+		flags = 49,
+    }, {}, {}, function() -- Done
+        StopAnimTask(ped, "mp_suicide", "pill", 1.0)
+        TriggerServerEvent("hospital:server:oxy")
+        TriggerEvent("inventory:client:ItemBox", QBCore.Shared.Items["oxy"], "remove")
+        TriggerServerEvent('hud:server:RelieveStress', math.random(10, 15))
+        SetEntityHealth(ped, GetEntityHealth(ped) + 60)
+        onPainKillers = true
+        if painkillerAmount < 3 then
+            painkillerAmount = painkillerAmount + 1
+        end
+            RemoveBleed(1)
+            ResetPartial()
+        
     end, function() -- Cancel
         StopAnimTask(ped, "mp_suicide", "pill", 1.0)
         QBCore.Functions.Notify(Lang:t('error.canceled'), "error")

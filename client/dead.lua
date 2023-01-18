@@ -3,6 +3,8 @@ local deadAnim = "dead_a"
 local hold = 5
 deathTime = 0
 
+local doctorCount = 0
+
 -- Functions
 
 local function loadAnimDict(dict)
@@ -59,24 +61,27 @@ end
 function DeathTimer()
     hold = 5
     while isDead do
-        Wait(1000)
-        deathTime = deathTime - 1
-        if deathTime <= 0 then
-            if IsControlPressed(0, 38) and hold <= 0 and not isInHospitalBed then
-                TriggerEvent("hospital:client:RespawnAtHospital")
-                hold = 5
-            end
-            if IsControlPressed(0, 38) then
-                if hold - 1 >= 0 then
-                    hold = hold - 1
-                else
-                    hold = 0
+        Wait(1000) 
+        
+            deathTime = deathTime - 1
+            if deathTime <= 0 then
+                if IsControlPressed(0, 38) and hold <= 0 and not isInHospitalBed then
+                    TriggerEvent("hospital:client:RespawnAtHospital")
+                    
+                    hold = 5
+                end
+                if IsControlPressed(0, 38) then
+                    if hold - 1 >= 0 then
+                        hold = hold - 1
+                    else
+                        hold = 0
+                    end
+                end
+                if IsControlReleased(0, 38) then
+                    hold = 5
                 end
             end
-            if IsControlReleased(0, 38) then
-                hold = 5
-            end
-        end
+        
     end
 end
 
@@ -103,6 +108,7 @@ AddEventHandler('gameEventTriggered', function(event, data)
         if victimDied and NetworkGetPlayerIndexFromPed(victim) == PlayerId() and IsEntityDead(PlayerPedId()) then
             if not InLaststand then
                 SetLaststand(true)
+                
             elseif InLaststand and not isDead then
                 SetLaststand(false)
                 local playerid = NetworkGetPlayerIndexFromPed(victim)
@@ -113,6 +119,7 @@ AddEventHandler('gameEventTriggered', function(event, data)
                 local weaponName = QBCore.Shared.Weapons[weapon].name or 'Unknown'
                 TriggerServerEvent("qb-log:server:CreateLog", "death", Lang:t('logs.death_log_title', {playername = playerName, playerid = GetPlayerServerId(playerid)}), "red", Lang:t('logs.death_log_message', {killername = killerName, playername = playerName, weaponlabel = weaponLabel, weaponname = weaponName}))
                 deathTime = Config.DeathTime
+                deathTimeDoc = Config.DeathTimeDoc
                 OnDeath()
                 DeathTimer()
             end
@@ -142,14 +149,17 @@ CreateThread(function()
             EnableControlAction(0, 249, true)
             EnableControlAction(0, 46, true)
             EnableControlAction(0, 47, true)
-
+            EnableControlAction(0, 303,true)
+            EnableControlAction(0, 48, true)
             if isDead then
                 if not isInHospitalBed then
-                    if deathTime > 0 then
-                        DrawTxt(0.93, 1.44, 1.0,1.0,0.6, Lang:t('info.respawn_txt', {deathtime = math.ceil(deathTime)}), 255, 255, 255, 255)
-                    else
-                        DrawTxt(0.865, 1.44, 1.0, 1.0, 0.6, Lang:t('info.respawn_revive', {holdtime = hold, cost = Config.BillCost}), 255, 255, 255, 255)
-                    end
+                    
+                        if deathTime > 0 then
+                            DrawTxt(0.93, 1.44, 1.0,1.0,0.6, Lang:t('info.respawn_txt', {deathtime = math.ceil(deathTime)}), 255, 255, 255, 255)
+                        else
+                            DrawTxt(0.865, 1.44, 1.0, 1.0, 0.6, Lang:t('info.respawn_revive', {holdtime = hold, cost = Config.BillCost}), 255, 255, 255, 255)
+                        end
+                    
                 end
 
                 if IsPedInAnyVehicle(ped, false) then
@@ -221,3 +231,5 @@ CreateThread(function()
         Wait(sleep)
 	end
 end)
+
+

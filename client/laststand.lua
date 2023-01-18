@@ -1,13 +1,14 @@
 Laststand = Laststand or {}
-Laststand.ReviveInterval = 360
-Laststand.MinimumRevive = 300
+Laststand.ReviveInterval = 600
+Laststand.MinimumRevive = 500
+Laststand.NoDoc = 600
 InLaststand = false
 LaststandTime = 0
 lastStandDict = "combat@damage@writhe"
 lastStandAnim = "writhe_loop"
 isEscorted = false
 local isEscorting = false
-
+local doctorCount = 0
 -- Functions
 
 local function GetClosestPlayer()
@@ -46,7 +47,15 @@ function SetLaststand(bool)
         local pos = GetEntityCoords(ped)
         local heading = GetEntityHeading(ped)
         TriggerServerEvent("InteractSound_SV:PlayOnSource", "demo", 0.1)
-        LaststandTime = Laststand.ReviveInterval
+        QBCore.Functions.TriggerCallback('hospital:GetDoctors', function(result)
+            if result then 
+                if result >= Config.MinimalDoctors then
+                LaststandTime = Laststand.NoDoc
+                else
+                    LaststandTime = Laststand.ReviveInterval
+                end
+            end
+        end)
         if IsPedInAnyVehicle(ped) then
             local veh = GetVehiclePedIsIn(ped)
             local vehseats = GetVehicleModelNumberOfSeats(GetHashKey(GetEntityModel(veh)))
@@ -121,6 +130,11 @@ RegisterNetEvent('hospital:client:isEscorted', function(bool)
     isEscorted = bool
 end)
 
+RegisterNetEvent('hospital:client:SetDocCount', function(amount)
+    doctorCount = amount
+    -- print(doctorCount)
+end)
+
 RegisterNetEvent('hospital:client:UseFirstAid', function()
     if not isEscorting then
         local player, distance = GetClosestPlayer()
@@ -165,3 +179,5 @@ RegisterNetEvent('hospital:client:HelpPerson', function(targetId)
         QBCore.Functions.Notify(Lang:t('error.canceled'), "error")
     end)
 end)
+
+

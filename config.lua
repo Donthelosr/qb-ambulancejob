@@ -1,19 +1,19 @@
 Config = {}
 Config.UseTarget = GetConvar('UseTarget', 'false') == 'true' -- Use qb-target interactions (don't change this, go to your server.cfg and add setr UseTarget true)
-Config.MinimalDoctors = 2 -- How many players with the ambulance job to prevent the hospital check-in system from being used
-Config.DocCooldown = 1 -- Cooldown between doctor calls allowed, in minutes
+Config.MinimalDoctors = 1 -- How many players with the ambulance job to prevent the hospital check-in system from being used
 Config.WipeInventoryOnRespawn = true -- Enable or disable removing all the players items when they respawn at the hospital
-Config.Helicopter = "polmav" -- Helicopter model that players with the ambulance job can use
-Config.BillCost = 2000 -- Price that players are charged for using the hospital check-in system
-Config.DeathTime = 300 -- How long the timer is for players to bleed out completely and respawn at the hospital
+Config.Helicopter = "safr412" -- Helicopter model that players with the ambulance job can use
+Config.BillCost = 1000 -- Price that players are charged for using the hospital check-in system
+Config.DeathTime = 180 -- How long the timer is for players to bleed out completely and respawn at the hospital
+Config.DeathTimeDoc = 600
 Config.PainkillerInterval = 60 -- Set the length of time painkillers last (per one)
 Config.HealthDamage = 5 -- Minumum damage done to health before checking for injuries
 Config.ArmorDamage = 5 -- Minumum damage done to armor before checking for injuries
-Config.ForceInjury = 35 -- Maximum amount of damage a player can take before limb damage & effects are forced to occur
-Config.AlwaysBleedChance = 70 -- Set the chance out of 100 that if a player is hit with a weapon, that also has a random chance, it will cause bleeding
-Config.MessageTimer = 12 -- How long it will take to display limb/bleed message
-Config.AIHealTimer = 20 -- How long it will take to be healed after checking in, in seconds
-Config.BleedTickRate = 30 -- How much time, in seconds, between bleed ticks
+Config.ForceInjury = 5 -- Maximum amount of damage a player can take before limb damage & effects are forced to occur
+Config.AlwaysBleedChance = 25 -- Set the chance out of 100 that if a player is hit with a weapon, that also has a random chance, it will cause bleeding
+Config.MessageTimer = 30 -- How long it will take to display limb/bleed message
+Config.AIHealTimer = 240 -- How long it will take to be healed after checking in, in seconds
+Config.BleedTickRate = 60 -- How much time, in seconds, between bleed ticks
 Config.BleedMovementTick = 10 -- How many seconds is taken away from the bleed tick rate if the player is walking, jogging, or sprinting
 Config.BleedMovementAdvance = 3 -- How much time moving while bleeding adds
 Config.BleedTickDamage = 8 -- The base damage that is multiplied by bleed level everytime a bleed tick occurs
@@ -23,94 +23,138 @@ Config.AdvanceBleedTimer = 10 -- How many bleed ticks occur before bleed level i
 Config.HeadInjuryTimer = 30 -- How much time, in seconds, do head injury effects chance occur
 Config.ArmInjuryTimer = 30 -- How much time, in seconds, do arm injury effects chance occur
 Config.LegInjuryTimer = 15 -- How much time, in seconds, do leg injury effects chance occur
-Config.HeadInjuryChance = 25 -- The chance, in percent, that head injury side-effects get applied
+Config.HeadInjuryChance = 5 -- The chance, in percent, that head injury side-effects get applied
 Config.LegInjuryChance = { -- The chance, in percent, that leg injury side-effects get applied
-    Running = 50,
-    Walking = 15
+    Running = 5,
+    Walking = 5
 }
-Config.MajorArmoredBleedChance = 45 -- The chance, in percent, that a player will get a bleed effect when taking heavy damage while wearing armor
-Config.MaxInjuryChanceMulti = 3 -- How many times the HealthDamage value above can divide into damage taken before damage is forced to be applied
+Config.MajorArmoredBleedChance = 25 -- The chance, in percent, that a player will get a bleed effect when taking heavy damage while wearing armor
 Config.DamageMinorToMajor = 35 -- How much damage would have to be applied for a minor weapon to be considered a major damage event. Put this at 100 if you want to disable it
-Config.AlertShowInfo = 2 -- How many injuries a player must have before being alerted about them
-
+Config.AlertShowInfo = 1 -- How many injuries a player must have before being alerted about them
+Config.MaxInjuryChanceMulti = 3
 Config.Locations = { -- Edit the various interaction points for players or create new ones
     ["checking"] = {
-	    [1] = vector3(308.19, -595.35, 43.29),
-	    [2] = vector3(-254.54, 6331.78, 32.43), -- paleto
+	    [1] = vector3(312.22, -592.81, 43.28), -- ocean
+	    
+    },
+    ["returnItems"] = {
+	    [1] = vector3(306.99, -595.17, 43.28), -- ocean
+	    
     },
     ["duty"] = {
-        [1] = vector3(311.18, -599.25, 43.29),
-        [2] = vector3(-254.88, 6324.5, 32.58),
+        [1] = vector3(310.96, -597.17, 43.28),--pillbox
+        [2] = vector3(1188.33, -1475.44, 34.76),--Firestation 1
+        [3] = vector3(194.93, -1644.87, 29.7),--Fire station 2
+     
+
     },
+
+    
     ["vehicle"] = {
-        [1] = vector4(294.578, -574.761, 43.179, 35.79),
-        [2] = vector4(-234.28, 6329.16, 32.15, 222.5),
+        [1] = vector4(-1827.25, -382.36, 40.67, 179.04), -- ocean 
+       
     },
     ["helicopter"] = {
-        [1] = vector4(351.58, -587.45, 74.16, 160.5),
-        [2] = vector4(-475.43, 5988.353, 31.716, 31.34),
+        [1] = vector4(-1867.05, -352.06, 58.04, 312.54), -- ocean south
+        [2] = vector4(-1832.59, -379.71, 58.04, 289.21), -- ocean
+        [3] = vector4(-475.43, 5988.353, 31.716, 31.34),
     },
     ["armory"] = {
-        [1] = vector3(309.93, -602.94, 43.29),
-        [2] = vector3(-245.13, 6315.71, 32.82),
+        [1] = vector3(306.87, -601.86, 43.28), -- ocean men
+        [2] = vector3(-1817.34, -356.76, 48.46), -- ocean women
+        [3] = vector3(-245.13, 6315.71, 32.82),
     },
     ["roof"] = {
         [1] = vector4(338.5, -583.85, 74.16, 245.5),
     },
     ["main"] = {
-        [1] = vector3(298.74, -599.33, 43.29),
+        [1] = vector3(-1851.18, -341.86, 49.44),
     },
     ["stash"] = {
-        [1] = vector3(309.78, -596.6, 43.29),
+        [1] = vector3(303.72, -600.71, 43.28), -- ocean
     },
     ["beds"] = {
-        [1] = {coords = vector4(353.1, -584.6, 43.11, 152.08), taken = false, model = 1631638868},
-        [2] = {coords = vector4(356.79, -585.86, 43.11, 152.08), taken = false, model = 1631638868},
-        [3] = {coords = vector4(354.12, -593.12, 43.1, 336.32), taken = false, model = 2117668672},
-        [4] = {coords = vector4(350.79, -591.8, 43.1, 336.32), taken = false, model = 2117668672},
-        [5] = {coords = vector4(346.99, -590.48, 43.1, 336.32), taken = false, model = 2117668672},
-        [6] = {coords = vector4(360.32, -587.19, 43.02, 152.08), taken = false, model = -1091386327},
-        [7] = {coords = vector4(349.82, -583.33, 43.02, 152.08), taken = false, model = -1091386327},
-        [8] = {coords = vector4(326.98, -576.17, 43.02, 152.08), taken = false, model = -1091386327},
-	--- paleto
-	    [9] = {coords = vector4(-252.43, 6312.25, 32.34, 313.48), taken = false, model = 2117668672},
-        [10] = {coords = vector4(-247.04, 6317.95, 32.34, 134.64), taken = false, model = 2117668672},
-        [11] = {coords = vector4(-255.98, 6315.67, 32.34, 313.91), taken = false, model = 2117668672},
-    },
-    ["jailbeds"] = {
-        [1] = {coords = vector4(1761.96, 2597.74, 45.66, 270.14), taken = false, model = 2117668672},
-        [2] = {coords = vector4(1761.96, 2591.51, 45.66, 269.8), taken = false, model = 2117668672},
-        [3] = {coords = vector4(1771.8, 2598.02, 45.66, 89.05), taken = false, model = 2117668672},
-        [4] = {coords = vector4(1771.85, 2591.85, 45.66, 91.51), taken = false, model = 2117668672},
+        -- [1] = {coords = vector4(-1862.74, -334.38, 48.76, 320.26), taken = false, model = 1570477186}, -- Ocean Hospital
+        -- [2] = {coords = vector4(-1865.75, -332.1, 48.76, 320.26), taken = false, model = 1570477186},
+        -- [3] = {coords = vector4(-1868.59, -329.93, 48.76, 320.26), taken = false, model = 1570477186},
+        -- [4] = {coords = vector4(-1872.18, -327.04, 48.76, 320.6), taken = false, model = 1570477186},
+        -- [5] = {coords = vector4(-1875.22, -324.74, 48.76, 320.6), taken = false, model = 1570477186},
+        -- [6] = {coords = vector4(-1878.53, -322.07, 48.76, 320.6), taken = false, model = 1570477186},
+        -- [7] = {coords = vector4(-1868.81, -323.12, 48.76, 140.1), taken = false, model = 1570477186},
+        -- [8] = {coords = vector4(-1871.96, -320.6, 48.76, 140.1), taken = false, model = 1570477186},
+        -- [9] = {coords = vector4(-1875.24, -318.05, 48.76, 140.1), taken = false, model = 1570477186},
+
+        [1] = {coords = vector4(324.26, -582.8, 42.84, 160.0), taken = false, model = 1631638868}, -- Pillbox Hospital
+        [2] = {coords = vector4(322.62, -587.17, 42.84, 340.0), taken = false, model = 1631638868},
+        [3] = {coords = vector4(317.67, -585.37, 42.84, 340.0), taken = false, model = 1631638868},
+        [4] = {coords = vector4(319.41, -581.04, 42.84, 160.0), taken = false, model = 1631638868},
+        [5] = {coords = vector4(314.47, -584.2, 42.84, 340.0), taken = false, model = 1631638868},
+        [6] = {coords = vector4(313.93, -579.04, 42.84, 160.0), taken = false, model = 1631638868},
+        [7] = {coords = vector4(311.06, -582.96, 42.84, 340.0), taken = false, model = 1631638868},
+        [8] = {coords = vector4(309.35, -577.38, 42.84, 160.0), taken = false, model = 1631638868},
+        [9] = {coords = vector4(307.72, -581.75, 42.84, 340.0), taken = false, model = 1631638868},
+
+        [10] = {coords = vector4(363.8, -589.12, 42.85, 65.0), taken = false, model = 1631638868},
+        [11] = {coords = vector4(364.96, -585.94, 42.85, 65.0), taken = false, model = 1631638868},
+        [12] = {coords = vector4(366.52, -581.66, 42.85, 65.0), taken = false, model = 1631638868},
+        
+      -- divided by two on heading in case
+       
     },
     ["stations"] = {
-        [1] = {label = Lang:t('info.pb_hospital'), coords = vector4(304.27, -600.33, 43.28, 272.249)}
+        [1] = {label = Lang:t('info.pb_hospital'), coords = vector4(318.59, -577.2, 43.28, 325.37)},
+       -- [2] = {label = Lang:t('Firestation'), coords = vector4(1195.42, -1476.16, 34.86, 174.94)},
+        --[3] = {label = Lang:t('Firestation'), coords = vector4(200.11, -1650.19, 29.79, 140.74)},
     }
 }
-
+--[[
 Config.AuthorizedVehicles = { -- Vehicles players can use based on their ambulance job grade level
-	-- Grade 0
-	[0] = {
-		["ambulance"] = "Ambulance",
+[0] = {
+		["ambulance"] = "LSFD Ambulance",
+        ["emsa"] = "EMS Ambulance",
+        ["emsc"] = "Dodge Charger",
+        ["emsf"] = "Ford Pickup",
+        ["emst"] = "Chevy Tahoe",
+        ["emsv"] = "Coroner's Van",
 	},
 	-- Grade 1
 	[1] = {
-		["ambulance"] = "Ambulance",
+		["ambulance"] = "LSFD Ambulance",
+        ["emsa"] = "EMS Ambulance",
+        ["emsc"] = "Dodge Charger",
+        ["emsf"] = "Ford Pickup",
+        ["emst"] = "Chevy Tahoe",
+        ["emsv"] = "Coroner's Van",
 
 	},
 	-- Grade 2
 	[2] = {
-		["ambulance"] = "Ambulance",
+		["ambulance"] = "LSFD Ambulance",
+        ["emsa"] = "EMS Ambulance",
+        ["emsc"] = "Dodge Charger",
+        ["emsf"] = "Ford Pickup",
+        ["emst"] = "Chevy Tahoe",
+        ["emsv"] = "Coroner's Van",
 	},
 	-- Grade 3
 	[3] = {
-		["ambulance"] = "Ambulance",
+		["ambulance"] = "LSFD Ambulance",
+        ["emsa"] = "EMS Ambulance",
+        ["emsc"] = "Dodge Charger",
+        ["emsf"] = "Ford Pickup",
+        ["emst"] = "Chevy Tahoe",
+        ["emsv"] = "Coroner's Van",
 	},
 	-- Grade 4
 	[4] = {
-		["ambulance"] = "Ambulance",
+		["ambulance"] = "LSFD Ambulance",
+        ["emsa"] = "EMS Ambulance",
+        ["emsc"] = "Dodge Charger",
+        ["emsf"] = "Ford Pickup",
+        ["emst"] = "Chevy Tahoe",
+        ["emsv"] = "Coroner's Van",
 	}
-}
+}]]--
 
 Config.Items = { -- Items found in the ambulance shop for players with the ambulance job to purchase
     label = Lang:t('info.safe'),
@@ -164,6 +208,49 @@ Config.Items = { -- Items found in the ambulance shop for players with the ambul
             type = "item",
             slot = 6,
         },
+        [7] = {
+            name = "medbag",
+            price = 0,
+            amount = 50,
+            info = {},
+            type = "item",
+            slot = 7,
+        },
+        [8] = {
+            name = "weapon_stungun",
+            price = 0,
+            amount = 50,
+            info = {},
+            type = "item",
+            slot = 8,
+        },
+        [9] = {
+            name = "taserammo",
+            price = 0,
+            amount = 50,
+            info = {},
+            type = "item",
+            slot = 9,
+        },
+        [10] = {
+            name = "prescription_bag",
+            price = 0,
+            amount = 50,
+            info = {},
+            type = "item",
+            slot = 10,
+        },
+        [11] = {
+            name = "ambulance-card",
+            price = 0,
+            amount = 50,
+            info = {},
+            type = "item",
+            slot = 11,
+        },
+
+
+        
     }
 }
 

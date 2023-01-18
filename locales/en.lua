@@ -27,7 +27,7 @@ local Translations = {
         self_death = 'Themselves or an NPC',
         wep_unknown = 'Unknown',
         respawn_txt = 'RESPAWN IN: ~r~%{deathtime}~s~ SECONDS',
-        respawn_revive = 'HOLD [~r~E~s~] FOR %{holdtime} SECONDS TO RESPAWN FOR $~r~%{cost}~s~',
+        respawn_revive = 'HOLD [~r~E~s~] FOR %{holdtime} SECONDS TO RESPAWN',
         bleed_out = 'YOU WILL BLEED OUT IN: ~r~%{time}~s~ SECONDS',
         bleed_out_help = 'YOU WILL BLEED OUT IN: ~r~%{time}~s~ SECONDS, YOU CAN BE HELPED',
         request_help = 'PRESS [~r~G~s~] TO REQUEST HELP',
@@ -45,7 +45,7 @@ local Translations = {
         ems_alert = 'EMS Alert - %{text}',
         mr = 'Mr.',
         mrs = 'Mrs.',
-        dr_needed = 'A doctor is needed at Pillbox Hospital',
+        dr_needed = 'A doctor is needed at Ocean Medical Center',
         ems_report = 'EMS Report',
         message_sent = 'Message to be sent',
         check_health = 'Check a Players Health',
@@ -58,7 +58,7 @@ local Translations = {
         heal_player_a = 'Heal A Player or Yourself (Admin Only)',
     },
     mail = {
-        sender = 'Pillbox Hospital',
+        sender = 'Ocean Medical Center',
         subject = 'Hospital Costs',
         message = 'Dear %{gender} %{lastname}, <br /><br />Hereby you received an email with the costs of the last hospital visit.<br />The final costs have become: <strong>$%{costs}</strong><br /><br />We wish you a quick recovery!'
     },
@@ -74,7 +74,7 @@ local Translations = {
     },
     menu = {
         amb_vehicles = 'Ambulance Vehicles',
-        status = 'Health Status',
+        status = 'Heath Status',
         close = '⬅ Close Menu',
     },
     text = {
@@ -93,6 +93,7 @@ local Translations = {
         call_doc = '[E] - Call doctor',
         call = 'Call',
         check_in = '[E] Check in',
+        returnItems = '[E] Return Items',
         check = 'Check In',
         lie_bed = '[E] - To lie in bed'
     },
@@ -127,7 +128,7 @@ local Translations = {
     }
 }
 
-Lang = Lang or Locale:new({
+Lang = Locale:new({
     phrases = Translations,
     warnOnMissing = true
 })

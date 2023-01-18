@@ -32,19 +32,19 @@ injured = {}
 BodyParts = {
     ['HEAD'] =          { label = Lang:t('body.head'),          causeLimp = false, isDamaged = false, severity = 0 },
     ['NECK'] =          { label = Lang:t('body.neck'),          causeLimp = false, isDamaged = false, severity = 0 },
-    ['SPINE'] =         { label = Lang:t('body.spine'),         causeLimp = true, isDamaged = false, severity = 0 },
+    ['SPINE'] =         { label = Lang:t('body.spine'),         causeLimp = false, isDamaged = false, severity = 0 },
     ['UPPER_BODY'] =    { label = Lang:t('body.upper_body'),    causeLimp = false, isDamaged = false, severity = 0 },
-    ['LOWER_BODY'] =    { label = Lang:t('body.lower_body'),    causeLimp = true, isDamaged = false, severity = 0 },
+    ['LOWER_BODY'] =    { label = Lang:t('body.lower_body'),    causeLimp = false, isDamaged = false, severity = 0 },
     ['LARM'] =          { label = Lang:t('body.left_arm'),      causeLimp = false, isDamaged = false, severity = 0 },
     ['LHAND'] =         { label = Lang:t('body.left_hand'),     causeLimp = false, isDamaged = false, severity = 0 },
     ['LFINGER'] =       { label = Lang:t('body.left_fingers'),  causeLimp = false, isDamaged = false, severity = 0 },
-    ['LLEG'] =          { label = Lang:t('body.left_leg'),      causeLimp = true, isDamaged = false, severity = 0 },
-    ['LFOOT'] =         { label = Lang:t('body.left_foot'),     causeLimp = true, isDamaged = false, severity = 0 },
+    ['LLEG'] =          { label = Lang:t('body.left_leg'),      causeLimp = false, isDamaged = false, severity = 0 },
+    ['LFOOT'] =         { label = Lang:t('body.left_foot'),     causeLimp = false, isDamaged = false, severity = 0 },
     ['RARM'] =          { label = Lang:t('body.right_arm'),     causeLimp = false, isDamaged = false, severity = 0 },
     ['RHAND'] =         { label = Lang:t('body.right_hand'),    causeLimp = false, isDamaged = false, severity = 0 },
     ['RFINGER'] =       { label = Lang:t('body.right_fingers'), causeLimp = false, isDamaged = false, severity = 0 },
-    ['RLEG'] =          { label = Lang:t('body.right_leg'),     causeLimp = true, isDamaged = false, severity = 0 },
-    ['RFOOT'] =         { label = Lang:t('body.right_foot'),    causeLimp = true, isDamaged = false, severity = 0 },
+    ['RLEG'] =          { label = Lang:t('body.right_leg'),     causeLimp = false, isDamaged = false, severity = 0 },
+    ['RFOOT'] =         { label = Lang:t('body.right_foot'),    causeLimp = false, isDamaged = false, severity = 0 },
 }
 
 -- Functions
@@ -81,10 +81,12 @@ local function GetDamagingWeapon(ped)
 end
 
 local function IsDamagingEvent(damageDone, weapon)
-    local luck = math.random(100)
+    local luck = math.random(1, 100)
     local multi = damageDone / Config.HealthDamage
-
+    -- print(luck)
+    if multi ~= nil then 
     return luck < (Config.HealthDamage * multi) or (damageDone >= Config.ForceInjury or multi > Config.MaxInjuryChanceMulti or Config.ForceInjuryWeapons[weapon])
+    end
 end
 
 local function DoLimbAlert()
@@ -235,7 +237,8 @@ local function ResetAll()
         limbs = BodyParts,
         isBleeding = tonumber(isBleeding)
     })
-    TriggerServerEvent("hospital:server:resetHungerThirst")
+    TriggerServerEvent("QBCore:Server:SetMetaData", "hunger", 100)
+    TriggerServerEvent("QBCore:Server:SetMetaData", "thirst", 100)
 end
 
 local function loadAnimDict(dict)
@@ -312,7 +315,7 @@ local function LeaveBed()
     bedObject = nil
     bedOccupyingData = nil
     isInHospitalBed = false
-
+	
     QBCore.Functions.GetPlayerData(function(PlayerData)
 	if PlayerData.metadata["injail"] > 0 then
 		TriggerEvent("prison:client:Enter", PlayerData.metadata["injail"])
@@ -594,7 +597,37 @@ RegisterNetEvent('hospital:client:Revive', function()
     emsNotified = false
     QBCore.Functions.Notify(Lang:t('info.healthy'))
 end)
+RegisterNetEvent('hospital:client:ReviveOnScene', function()
+    local player = PlayerPedId()
 
+    if isDead or InLaststand then
+        local pos = GetEntityCoords(player, true)
+        NetworkResurrectLocalPlayer(pos.x, pos.y, pos.z, GetEntityHeading(player), true, false)
+        isDead = false
+        SetEntityInvincible(player, false)
+        SetLaststand(false)
+    end
+
+    -- if isInHospitalBed then
+    --     loadAnimDict(inBedDict)
+    --     TaskPlayAnim(player, inBedDict , inBedAnim, 8.0, 1.0, -1, 1, 0, 0, 0, 0 )
+    --     SetEntityInvincible(player, true)
+    --     canLeaveBed = true
+    -- end
+
+    TriggerServerEvent("hospital:server:RestoreWeaponDamage")
+    SetEntityMaxHealth(player, 200)
+    SetEntityHealth(player, 185)
+    ClearPedBloodDamage(player)
+    -- SetPlayerSprint(PlayerId(), true)
+    ResetPartial()
+    -- ResetPedMovementClipset(player, 0.0)
+    TriggerServerEvent('hud:server:RelieveStress', 100)
+    TriggerServerEvent("hospital:server:SetDeathStatus", false)
+    TriggerServerEvent("hospital:server:SetLaststandStatus", false)
+    emsNotified = false
+    QBCore.Functions.Notify(Lang:t('info.healthy'))
+end)
 RegisterNetEvent('hospital:client:SetPain', function()
     ApplyBleed(math.random(1,4))
     if not BodyParts[Config.Bones[24816]].isDamaged then
@@ -637,16 +670,25 @@ RegisterNetEvent('hospital:client:HealInjuries', function(type)
     QBCore.Functions.Notify(Lang:t('success.wounds_healed'), 'success')
 end)
 
-RegisterNetEvent('hospital:client:SendToBed', function(id, data, isRevive)
+RegisterNetEvent('hospital:client:SendToBed', function(id, data,time, isRevive)
     bedOccupying = id
     bedOccupyingData = data
     SetBedCam()
+    
     CreateThread(function ()
         Wait(5)
         if isRevive then
-            QBCore.Functions.Notify(Lang:t('success.being_helped'), 'success')
-            Wait(Config.AIHealTimer * 1000)
-            TriggerEvent("hospital:client:Revive")
+            print(time)
+            if time ~= nil then 
+                QBCore.Functions.Notify(Lang:t('success.being_helped'), 'success')
+                Wait(time * 60000)
+                TriggerEvent("hospital:client:Revive")
+            else
+                local time = 1
+                QBCore.Functions.Notify(Lang:t('success.being_helped'), 'success')
+                Wait(time * 60000)
+                TriggerEvent("hospital:client:Revive")
+            end
         else
             canLeaveBed = true
         end
@@ -657,13 +699,10 @@ RegisterNetEvent('hospital:client:SetBed', function(id, isTaken)
     Config.Locations["beds"][id].taken = isTaken
 end)
 
-RegisterNetEvent('hospital:client:SetBed2', function(id, isTaken)
-    Config.Locations["jailbeds"][id].taken = isTaken
-end)
-
 RegisterNetEvent('hospital:client:RespawnAtHospital', function()
     TriggerServerEvent("hospital:server:RespawnAtHospital")
-    if exports["qb-policejob"]:IsHandcuffed() then
+    TriggerServerEvent('hospital:server:SaveDeadItems')
+    if exports["tibus-policejob"]:IsHandcuffed() then
         TriggerEvent("police:client:GetCuffed", -1)
     end
     TriggerEvent("police:client:DeEscort")
@@ -692,7 +731,8 @@ end)
 RegisterNetEvent('hospital:client:adminHeal', function()
     local ped = PlayerPedId()
     SetEntityHealth(ped, 200)
-    TriggerServerEvent("hospital:server:resetHungerThirst")
+    TriggerServerEvent("QBCore:Server:SetMetaData", "hunger", 100)
+    TriggerServerEvent("QBCore:Server:SetMetaData", "thirst", 100)
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
@@ -847,18 +887,20 @@ local listen = false
 end
 
 RegisterNetEvent('qb-ambulancejob:checkin', function()
-    if doctorCount >= Config.MinimalDoctors then
-        TriggerServerEvent("hospital:server:SendDoctorAlert")
-    else
+    -- if doctorCount >= Config.MinimalDoctors then
+    --     TriggerServerEvent("hospital:server:SendDoctorAlert")
+    -- else
         TriggerEvent('animations:client:EmoteCommandStart', {"notepad"})
         QBCore.Functions.Progressbar("hospital_checkin", Lang:t('progress.checking_in'), 2000, false, true, {
             disableMovement = true,
             disableCarMovement = true,
             disableMouse = false,
             disableCombat = true,
+            -- DisableControlAction(0, 19, true) 	,
         }, {}, {}, {}, function() -- Done
             TriggerEvent('animations:client:EmoteCommandStart', {"c"})
-            local bedId = GetAvailableBed()
+            -- local bedId = GetAvailableBed() 
+            local bedId = math.random(1,9) 
             if bedId then
                 TriggerServerEvent("hospital:server:SendToBed", bedId, true)
             else
@@ -868,7 +910,7 @@ RegisterNetEvent('qb-ambulancejob:checkin', function()
             TriggerEvent('animations:client:EmoteCommandStart', {"c"})
             QBCore.Functions.Notify(Lang:t('error.canceled'), "error")
         end)
-    end
+    -- end
 end)
 
 RegisterNetEvent('qb-ambulancejob:beds', function()
@@ -878,7 +920,17 @@ RegisterNetEvent('qb-ambulancejob:beds', function()
         QBCore.Functions.Notify(Lang:t('error.beds_taken'), "error")
     end
 end)
-
+RegisterNetEvent('qb-ambulancejob:returnItems', function()
+    -- QBCore.Functions.Progressbar("hospital_checkin", Lang:t('progress.checking_in'), 2000, false, true, {
+    --     disableMovement = true,
+    --     disableCarMovement = true,
+    --     disableMouse = false,
+    --     disableCombat = true,
+    --     -- DisableControlAction(0, 19, true) 	,
+    -- }, {}, {}, {}, function() -- Done
+    -- end)
+    TriggerServerEvent("hospital:server:SendToBed", closestBed, false)
+end)
 -- Convar turns into a boolean
 if Config.UseTarget then
     CreateThread(function()
@@ -896,6 +948,25 @@ if Config.UseTarget then
                         icon = "fa fa-clipboard",
                         event = "qb-ambulancejob:checkin",
                         label = "Check In",
+                    }
+                },
+                distance = 1.5
+            })
+        end
+        for k, v in pairs(Config.Locations["returnItems"]) do
+            exports['qb-target']:AddBoxZone("returnItems"..k, vector3(v.x, v.y, v.z), 3.5, 2, {
+                name = "returnItems"..k,
+                heading = -72,
+                debugPoly = false,
+                minZ = v.z - 2,
+                maxZ = v.z + 2,
+            }, {
+                options = {
+                    {
+                        type = "server",
+                        icon = "fa fa-clipboard",
+                        event = "hospital:server:GiveDeadItems",
+                        label = "Check Out",
                     }
                 },
                 distance = 1.5
@@ -949,6 +1020,7 @@ else
                 end
             end)
         end
+        
         local bedPoly = {}
         for k, v in pairs(Config.Locations["beds"]) do
             bedPoly[#bedPoly+1] = BoxZone:Create(v.coords, 2.5, 2.3, {
